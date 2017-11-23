@@ -6,34 +6,37 @@ TOP = 2
 BOTTOM = 3
 
 def shift4(array):
-    assert len(array) == 4
-    mapping = [0, 1, 2, 3]
-    def shift(pos):
-        for i in range(pos, 4):\
-            mapping[i] -= 1
+    lenarray = len(array)
+    for cur in range(0, lenarray):
+        if array[cur] < 0: array[cur] = 0
     cur = 0
-    while cur < 3:
+    while cur < lenarray - 1:
         if (array[cur] == 1 and array[cur+1] == 2) or \
            (array[cur] == 2 and array[cur+1] == 1) or \
-           (array[cur] == array[cur+1] and array[cur] > 2) or \
-           (array[cur] > 0 and array[cur+1] == 0):
-            shift(cur+1)
-            cur += 2
-            continue
-        if array[cur] > 0 and array[cur+1] == 0:
-            shift(cur+1)
+           (array[cur] == array[cur+1] and array[cur] > 2):
+           array[cur] += array[cur+1]
+           array[cur+1] = 0
+           cur += 2
+        else:
             cur += 1
-            continue
-        cur += 1
-
-    ret = [0, 0, 0, 0] # create a new array and copy old values into it
-    for i in range(0, 4):
-        if array[i] < 0: array[i] = 0
-        ret[mapping[i]] += array[i]
-    if ret[-1] == 0:
-        ret[-1] = -1 # mark this as possible insertion point of new 1/2 block 
-    return ret
+    shiftbegin = 0
+    for cur in range(0, lenarray):
+        if array[cur] == 0:
+            shiftbegin = cur
+            break
+    for cur in range(shiftbegin, lenarray-1):
+        t = array[cur]
+        array[cur] = array[cur+1]
+        array[cur+1] = t
+    if array[-1] == 0:
+        array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
+    return array
+        
        
+#print(shift4([0, 0, 0, 1]))
+#print(shift4([0, 0, 1, 0]))
+#exit()
+
 assert shift4([6, 6, 0, 2]) == [12, 0, 2, -1]
 assert shift4([12, 0, 2, -1]) == [12, 2, 0, -1]
 assert shift4([6, 0, 0, 6]) == [6, 0, 6,  -1]
@@ -58,18 +61,11 @@ class GameGrid:
             [(0, 0), (1, 0), (2, 0), (3, 0)],
         ],
         BOTTOM: [
-            [(0, 0), (1, 0), (2, 0), (3, 0)],
-            [(0, 1), (1, 1), (2, 1), (3, 1)],
-            [(0, 2), (1, 2), (2, 2), (3, 2)],
-            [(0, 3), (1, 3), (2, 3), (3, 3)],
+            [(3, 0), (2, 0), (1, 0), (0, 0)],
+            [(3, 1), (2, 1), (1, 1), (0, 1)],
+            [(3, 2), (2, 2), (1, 2), (0, 2)],
+            [(3, 3), (2, 3), (1, 3), (0, 3)],
         ],
-    }
-
-    possibleNewBlockPositions = {
-        LEFT:   [(0, 3), (1, 3), (2, 3), (3, 3)],
-        RIGHT:  [(0, 0), (1, 0), (2, 0), (3, 0)],
-        TOP:    [(3, 0), (3, 1), (3, 2), (3, 3)],
-        BOTTOM: [(0, 0), (0, 1), (0, 2), (0, 3)],
     }
 
     def __getRotationNormalizedMatrix(self, src, direction):
@@ -90,26 +86,37 @@ class GameGrid:
     def __reverseRotationNormalizedMatrix(self, src, direction):
         """Resume the rotation of matrix."""
         assert direction in [LEFT, RIGHT, TOP, BOTTOM]
+        newMatrix = [ [0, 0, 0, 0 ], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0] ]
         if direction == LEFT: 
-            return src 
+            for row in range(0,4):
+                for col in range(0,4):
+                    newMatrix[row][col] = src[row][col]
         else:
             convMatrix = self.rotationToLeftMatrix[direction]
-            newMatrix = [ [0] * 4 ] * 4
             for row in range(0, 4):
                 for col in range(0, 4):
                     oldRow, oldCol = convMatrix[row][col]
                     newMatrix[oldRow][oldCol] = src[row][col]
-            return newMatrix
+        return newMatrix
                 
 
     def __init__(self, state):
         self.state = state # initial state as given by 3+3
         self.__next = 1    # we know the first block appears will always be 1
 
-    def enumerateUserMove(self, direction):
+    def enumerateUserMoveResults(self, direction):
         """Fictional analyse of user movement, returns a series of possible
         matrixes."""
-        pass
+        matrix = self.__getRotationNormalizedMatrix(self.state, direction)
+        for each in matrix: shift4(each)
+        for i in range(0, 4):
+            if matrix[i][-1] < 0:
+                # if the right most col is marked as appendable
+                matrix[i][-1] = self.__next
+                yield self.__reverseRotationNormalizedMatrix(matrix, direction)
+                matrix[i][-1] = 0
+                print(matrix)
+
 
     def newState(self, state):
         """Updates the new state as given by 3+3 and user/AI choice."""
@@ -118,3 +125,16 @@ class GameGrid:
             self.__next == 2
         else:
             self.__next == 1
+
+if __name__ == "__main__":
+    s = GameGrid([
+        [0, 0, 1, 0],
+        [0] * 4,
+        [0] * 4,
+        [0, 0, 2, 0],
+    ])
+
+    for each in s.enumerateUserMoveResults(BOTTOM):
+        for line in each:
+            print(" ".join(["%2d" % (i > 0 and i or 0) for i in line]))
+        print("----")
