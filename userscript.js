@@ -11,6 +11,14 @@
 (function(){
 //////////////////////////////////////////////////////////////////////////////
 
+function moveGrid(direction){
+    console.log("try trigger a keypress...");
+    var dict = {
+        "left": "left", "right": "right", "top": "up", "bottom": "down"};
+    var button = unsafeWindow.game.controller.buttons[dict[direction]];
+    button.trigger("keydown");
+}
+
 function getGameStatus(){
     var orig = unsafeWindow.game.grid;
     if(orig[0] === undefined) return null; // no valid input, game not begun?
@@ -32,10 +40,13 @@ var askAdvice = function(){
     // send request
     $.ajax({
         url: "http://127.0.0.1:13333/" + state.grid + "/" + state.food + "/",
+        dataType: "json",
     })
     .done(function(data){
+        if(state.grid != data.hash) return;
+        console.log(data.result);
         lastStateHash = state.grid; // mark as done
-        console.log(data);
+        moveGrid(data.choice);
     })
     .always(function(){
         setTimeout(askAdvice, 500);

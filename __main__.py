@@ -33,12 +33,13 @@ def evaluateMovement(state, direction, movementCount=1, maxcount=3):
 ##############################################################################
 
 from bottle import route, run, request, response
-import re
+import json
 
 @route('/<grid>/<food>/')
 def index(grid, food):
     response.set_header("Access-Control-Allow-Origin", "*")
-
+    
+    orighash = grid
     grid = [int(i) for i in grid.split(",")]
     grid = [grid[0:4], grid[4:8], grid[8:12], grid[12:16]]
     food = int(food)
@@ -51,16 +52,37 @@ def index(grid, food):
 
     caller = lambda d: evaluateMovement(\
         grid, d, movementCount=movementCount, maxcount=maxcount)
-    
+
+    ret = {
+        "result": "",
+        "hash": orighash,
+        "data": {
+            "left": caller(LEFT),
+            "right": caller(RIGHT),
+            "top": caller(TOP),
+            "bottom": caller(BOTTOM),
+        }
+    }
+
+    # discard moves with no freedom grade and build a list
+    sort = [each for each in ret["data"].items() if each[1][1] > 0]
+    def criteria(item):
+        value = item[1]
+        return value[0] + value[1] / 16777216.0
+    sort = sorted(sort, key=criteria, reverse=True)
+    ret["choice"] = sort[0][0]
+
     result = ""
     for line in grid:
         result += " ".join(["%4d" % (i > 0 and i or 0) for i in line]) + "\n"
-    result += "LEFT  -> %s\n" % str(caller(LEFT))
-    result += "RIGHT -> %s\n" % str(caller(RIGHT))
-    result += "TOP   -> %s\n" % str(caller(TOP))
-    result += "BOTTOM -> %s\n" % str(caller(BOTTOM))
+    arrow = lambda x: x == ret["choice"] and "<-" or ""
+    result += "LEFT   -> %s %s\n" % (str(ret["data"]["left"]), arrow("left"))
+    result += "RIGHT  -> %s %s\n" % (str(ret["data"]["right"]), arrow("right"))
+    result += "TOP    -> %s %s\n" % (str(ret["data"]["top"]), arrow("top"))
+    result += "BOTTOM -> %s %s\n" % (str(ret["data"]["bottom"]), arrow("bottom"))
+    ret["result"] = result
     
-    return result
+    return json.dumps(ret)
 
 
 run(host='localhost', port=13333)
