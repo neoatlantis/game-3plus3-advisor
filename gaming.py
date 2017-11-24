@@ -19,15 +19,16 @@ def shift4(array):
            cur += 2
         else:
             cur += 1
-    shiftbegin = 0
+    shiftbegin = -1 
     for cur in range(0, lenarray):
         if array[cur] == 0:
             shiftbegin = cur
             break
-    for cur in range(shiftbegin, lenarray-1):
-        t = array[cur]
-        array[cur] = array[cur+1]
-        array[cur+1] = t
+    if shiftbegin >= 0:
+        for cur in range(shiftbegin, lenarray-1):
+            t = array[cur]
+            array[cur] = array[cur+1]
+            array[cur+1] = t
     if array[-1] == 0:
         array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
     return array
@@ -100,22 +101,26 @@ class GameGrid:
         return newMatrix
                 
 
-    def __init__(self, state):
+    def __init__(self, state, movementCount=1):
         self.state = state # initial state as given by 3+3
-        self.__next = 1    # we know the first block appears will always be 1
+        self.__next = (movementCount % 2) + 1 
 
     def enumerateUserMoveResults(self, direction):
         """Fictional analyse of user movement, returns a series of possible
         matrixes."""
+
         matrix = self.__getRotationNormalizedMatrix(self.state, direction)
+#        print("before shift\n", matrix)
         for each in matrix: shift4(each)
+#        print("after shift\n", matrix)
+
         for i in range(0, 4):
             if matrix[i][-1] < 0:
                 # if the right most col is marked as appendable
                 matrix[i][-1] = self.__next
                 yield self.__reverseRotationNormalizedMatrix(matrix, direction)
                 matrix[i][-1] = 0
-                print(matrix)
+#                print(matrix)
 
 
     def newState(self, state):
@@ -126,15 +131,16 @@ class GameGrid:
         else:
             self.__next == 1
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     s = GameGrid([
-        [0, 0, 1, 0],
-        [0] * 4,
-        [0] * 4,
-        [0, 0, 2, 0],
+        [12, 6, 3, 2],
+        [6,  12, 3, 3],
+        [12, 6, 3, 2],
+        [6,  12, 2, 3],
     ])
 
-    for each in s.enumerateUserMoveResults(BOTTOM):
+    for each in s.enumerateUserMoveResults(LEFT):
         for line in each:
             print(" ".join(["%2d" % (i > 0 and i or 0) for i in line]))
         print("----")
+"""
