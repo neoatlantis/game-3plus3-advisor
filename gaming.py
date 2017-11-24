@@ -5,6 +5,9 @@ RIGHT = 1
 TOP = 2
 BOTTOM = 3
 
+# 当前存在问题：新块其实可以出现在移动方向对侧的任何空块上，和当列/行是否移动过无关
+# 计算自由度似乎还有很大错误。
+
 def shift4(array):
     lenarray = len(array)
     for cur in range(0, lenarray):
@@ -24,13 +27,13 @@ def shift4(array):
         if array[cur] == 0:
             shiftbegin = cur
             break
-    if shiftbegin >= 0:
+    if shiftbegin >= 0: # if not, this is unshiftable
         for cur in range(shiftbegin, lenarray-1):
             t = array[cur]
             array[cur] = array[cur+1]
             array[cur+1] = t
-    if array[-1] == 0:
-        array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
+        if array[-1] == 0:
+            array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
     return array
         
        

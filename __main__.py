@@ -29,8 +29,40 @@ def evaluateMovement(state, direction, movementCount=1, maxcount=3):
 
 ##############################################################################
 
+from bottle import route, run, request, response
+import re
+
+@route('/<grid>/<food>/')
+def index(grid, food):
+    response.set_header("Access-Control-Allow-Origin", "*")
+
+    grid = [int(i) for i in grid.split(",")]
+    grid = [grid[0:4], grid[4:8], grid[8:12], grid[12:16]]
+    food = int(food)
+
+
+    maxcount = 5
+    movementCount = food
+
+    caller = lambda d: evaluateMovement(\
+        grid, d, movementCount=movementCount, maxcount=maxcount)
+    
+    result = ""
+    for line in grid:
+        result += " ".join(["%4d" % (i > 0 and i or 0) for i in line]) + "\n"
+    result += "LEFT  -> %s\n" % str(caller(LEFT))
+    result += "RIGHT -> %s\n" % str(caller(RIGHT))
+    result += "TOP   -> %s\n" % str(caller(TOP))
+    result += "BOTTOM -> %s\n" % str(caller(BOTTOM))
+    
+    return result
+
+
+run(host='localhost', port=13333)
+
+"""
 state = [
-    [0, 1, 0, 3],
+    [0, 2, 0, 3],
     [0, 2, 0, 1],
     [1, 0, 0, 3],
     [6, 24, 12, 2],
@@ -47,3 +79,4 @@ print("LEFT", evaluateMovement(state, LEFT, maxcount=maxcount))
 print("RIGHT", evaluateMovement(state, RIGHT, maxcount=maxcount))
 print("TOP", evaluateMovement(state, TOP, maxcount=maxcount))
 print("BOTTOM", evaluateMovement(state, BOTTOM, maxcount=maxcount))
+"""
