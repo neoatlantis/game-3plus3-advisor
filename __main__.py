@@ -6,6 +6,9 @@ def evaluateMovement(state, direction, movementCount=1, maxcount=3):
     retMax = max([max(l) for l in state]) 
     retFreedomGrade = 1 # how many moves can be done after this move
 
+#    if movementCount == 1:
+#        print(state, direction)
+
     if movementCount <= maxcount:
         grid = GameGrid(state, movementCount)
         
@@ -40,6 +43,8 @@ def index(grid, food):
     grid = [grid[0:4], grid[4:8], grid[8:12], grid[12:16]]
     food = int(food)
 
+#    print(grid)
+#    print("next: %d" % food)
 
     maxcount = 5
     movementCount = food
@@ -59,24 +64,3 @@ def index(grid, food):
 
 
 run(host='localhost', port=13333)
-
-"""
-state = [
-    [0, 2, 0, 3],
-    [0, 2, 0, 1],
-    [1, 0, 0, 3],
-    [6, 24, 12, 2],
-]
-nxt = 1
-maxcount = 5
-
-if nxt == 1:
-    movementCount = 1
-else:
-    movementCount = 2
-
-print("LEFT", evaluateMovement(state, LEFT, maxcount=maxcount))
-print("RIGHT", evaluateMovement(state, RIGHT, maxcount=maxcount))
-print("TOP", evaluateMovement(state, TOP, maxcount=maxcount))
-print("BOTTOM", evaluateMovement(state, BOTTOM, maxcount=maxcount))
-"""

@@ -9,6 +9,16 @@ BOTTOM = 3
 # 计算自由度似乎还有很大错误。
 
 def shift4(array):
+    """Returns a 4-elements array that's shifted to the left. Mark the right
+    most cell if it may be inserted with a new block with -1, and returns
+    whether the array is in fact shifted(e.g. a [3, 2, 2, 0] is not
+    left-shiftable, although it will be returned as [3, 2, 2, -1], meaning that
+    if another row is shifted, this array may be still appended with a value at
+    position 3, whereas if all 4 rows in the matrix are not shiftable, a
+    movement to the left is defacto impossible.
+    """
+    shifted = False
+    
     lenarray = len(array)
     for cur in range(0, lenarray):
         if array[cur] < 0: array[cur] = 0
@@ -20,33 +30,44 @@ def shift4(array):
            array[cur] += array[cur+1]
            array[cur+1] = 0
            cur += 2
+           shifted = True
         else:
             cur += 1
-    shiftbegin = -1 
+    
+    shiftbegin = -1
     for cur in range(0, lenarray):
         if array[cur] == 0:
             shiftbegin = cur
             break
     if shiftbegin >= 0: # if not, this is unshiftable
         for cur in range(shiftbegin, lenarray-1):
+            if not shifted and (array[cur] > 0 or array[cur+1] > 0):
+                shifted = True
             t = array[cur]
             array[cur] = array[cur+1]
             array[cur+1] = t
-        if array[-1] == 0:
-            array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
-    return array
+    if array[-1] == 0:
+        # the insertion point of new block can be anywhere opposite the moving
+        # direction, even though this row itself was not moved
+        array[-1] = -1 # mark this as possible insertion point of new 1/2 block 
+    return array, shifted
         
        
 #print(shift4([0, 0, 0, 1]))
 #print(shift4([0, 0, 1, 0]))
 #exit()
 
-assert shift4([6, 6, 0, 2]) == [12, 0, 2, -1]
-assert shift4([12, 0, 2, -1]) == [12, 2, 0, -1]
-assert shift4([6, 0, 0, 6]) == [6, 0, 6,  -1]
-assert shift4([1, 2, 2, 1]) == [3, 3, 0,  -1]
-assert shift4([1, 0, 0, 2]) == [1, 0, 2,  -1]
-assert shift4([1, 1, 1, 1]) == [1, 1, 1, 1]
+def test(i, oseries, oshifted):
+    a, b = shift4(i)
+    assert a == oseries and b == oshifted
+
+test([6, 6, 0, 2], [12, 0, 2, -1], True)
+test([12, 0, 2, -1], [12, 2, 0, -1], True)
+test([6, 0, 0, 6], [6, 0, 6,  -1], True)
+test([1, 2, 2, 1], [3, 3, 0,  -1], True)
+test([1, 0, 0, 2], [1, 0, 2,  -1], True)
+test([1, 1, 1, 1], [1, 1, 1, 1], False)
+test([0, 0, 0, 0], [0, 0, 0, -1], False)
 
 
 class GameGrid:
@@ -77,15 +98,18 @@ class GameGrid:
         `self.state` and its movement into a always-shifting-to-left direction,
         so that we can reuse the shifting code."""
         assert direction in [LEFT, RIGHT, TOP, BOTTOM]
+        newMatrix = [ [0, 0, 0, 0 ], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0] ]
         if direction == LEFT: 
-            return src 
+            for row in range(0,4):
+                for col in range(0,4):
+                    newMatrix[row][col] = src[row][col]
         else:
             convMatrix = self.rotationToLeftMatrix[direction]
             newMatrix = [
                 [ src[row][col] for row, col in rowConv ]
                 for rowConv in convMatrix
             ]
-            return newMatrix
+        return newMatrix
 
     def __reverseRotationNormalizedMatrix(self, src, direction):
         """Resume the rotation of matrix."""
@@ -106,7 +130,7 @@ class GameGrid:
 
     def __init__(self, state, movementCount=1):
         self.state = state # initial state as given by 3+3
-        self.__next = (movementCount % 2) + 1 
+        self.__next = ((movementCount + 1) % 2) + 1 
 
     def enumerateUserMoveResults(self, direction):
         """Fictional analyse of user movement, returns a series of possible
@@ -114,7 +138,16 @@ class GameGrid:
 
         matrix = self.__getRotationNormalizedMatrix(self.state, direction)
 #        print("before shift\n", matrix)
-        for each in matrix: shift4(each)
+        shiftable = False
+        for each in matrix:
+            _, shifted = shift4(each)
+            shiftable = shiftable or shifted
+
+        if not shiftable:
+#            print("not shiftable")
+            yield from ()
+            return
+
 #        print("after shift\n", matrix)
 
         for i in range(0, 4):
@@ -126,24 +159,15 @@ class GameGrid:
 #                print(matrix)
 
 
-    def newState(self, state):
-        """Updates the new state as given by 3+3 and user/AI choice."""
-        self.state = state
-        if self.__next == 1:
-            self.__next == 2
-        else:
-            self.__next == 1
-
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     s = GameGrid([
-        [12, 6, 3, 2],
-        [6,  12, 3, 3],
-        [12, 6, 3, 2],
-        [6,  12, 2, 3],
-    ])
+        [1, 2, 1, 3],
+        [6, 2, 12, 1],
+        [12, 3, 1, 0],
+        [2, 2, 0, 0],
+    ], 1)
 
-    for each in s.enumerateUserMoveResults(LEFT):
+    for each in s.enumerateUserMoveResults(TOP):
         for line in each:
             print(" ".join(["%2d" % (i > 0 and i or 0) for i in line]))
         print("----")
-"""
