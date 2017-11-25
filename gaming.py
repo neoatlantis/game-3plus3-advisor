@@ -160,14 +160,16 @@ class GameGrid:
 
 
 if __name__ == "__main__":
-    s = GameGrid([
-        [1, 2, 1, 3],
-        [6, 2, 12, 1],
-        [12, 3, 1, 0],
-        [2, 2, 0, 0],
-    ], 1)
+
+    test = "3,6,192,3,24,48,12,24,3,768,48,3,1,384,6,3"
+    nxt = 2
+
+    grid = [int(i) for i in test.split(",")]
+    grid = [grid[0:4], grid[4:8], grid[8:12], grid[12:16]]
+    
+    s = GameGrid(grid, nxt)
 
     for each in s.enumerateUserMoveResults(TOP):
         for line in each:
-            print(" ".join(["%2d" % (i > 0 and i or 0) for i in line]))
+            print(" ".join(["%4d" % (i > 0 and i or 0) for i in line]))
         print("----")

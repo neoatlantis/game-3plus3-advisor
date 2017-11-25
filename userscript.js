@@ -15,6 +15,7 @@ function moveGrid(direction){
     console.log("try trigger a keypress...");
     var dict = {
         "left": "left", "right": "right", "top": "up", "bottom": "down"};
+    if(!direction || !dict[direction]) return;
     var button = unsafeWindow.game.controller.buttons[dict[direction]];
     button.trigger("keydown");
 }

@@ -41,13 +41,23 @@ def index(grid, food):
     
     orighash = grid
     grid = [int(i) for i in grid.split(",")]
+
+    zeros = 0
+    for i in grid:
+        if i == 0: 
+            zeros+=1
+
     grid = [grid[0:4], grid[4:8], grid[8:12], grid[12:16]]
     food = int(food)
 
 #    print(grid)
 #    print("next: %d" % food)
+    
+    if zeros > 8:
+        maxcount = 4
+    else:
+        maxcount = 5
 
-    maxcount = 5
     movementCount = food
 
     caller = lambda d: evaluateMovement(\
@@ -66,11 +76,16 @@ def index(grid, food):
 
     # discard moves with no freedom grade and build a list
     sort = [each for each in ret["data"].items() if each[1][1] > 0]
+    print(ret)
     def criteria(item):
         value = item[1]
         return value[0] + value[1] / 16777216.0
     sort = sorted(sort, key=criteria, reverse=True)
-    ret["choice"] = sort[0][0]
+    print(sort)
+    if not sort:
+        ret["choice"] = ""
+    else:
+        ret["choice"] = sort[0][0]
 
     result = ""
     for line in grid:
