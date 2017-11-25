@@ -5,9 +5,6 @@ RIGHT = 1
 TOP = 2
 BOTTOM = 3
 
-# 当前存在问题：新块其实可以出现在移动方向对侧的任何空块上，和当列/行是否移动过无关
-# 计算自由度似乎还有很大错误。
-
 def shift4(array):
     """Returns a 4-elements array that's shifted to the left. Mark the right
     most cell if it may be inserted with a new block with -1, and returns
