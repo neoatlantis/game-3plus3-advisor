@@ -1,8 +1,13 @@
 Sächsli: an Automated Bot for Game 3+3
 ======================================
 
-This is an automated bot for game [3+3][3P3], which is also available on
-the chat software Telegram using @gamee bot.
+This is an automated bot for game [3+3][3P3]. Beside the link, the game is
+available on the chat software Telegram by calling its @gamee bot.
+
+_Saechsli_ plays this game automatically, and may achieve a score of
+10000-20000(a matter of luck). It serves as a browser userscript, and
+communicates a background service on Python, the latter doing searches and
+instructs the former.
 
 ## Requirements
 
