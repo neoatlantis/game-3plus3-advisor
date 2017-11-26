@@ -28,8 +28,9 @@ instructs the former.
 
 ## Remarks
 
-* This work is not intended to cheat, but for study how to solve such a puzzle
-  by using algorithms. Do not use it to trouble anyone.
+* This work is not intended to cheat(and why, experienced human player may do
+  much better), but for study how to solve such a puzzle by using algorithms.
+  Do not use it to trouble anyone.
 * Currently Saechsli will search 4-6 steps basing on current grid status, and
   pick the best one with 1) the maximal reachable number in a cell, as well as
   2) the maximal freedom degrees after one movement. This differs in practice
