@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          3+3 game bot
-// @namespace     http://github.com/neoatlantis/game-3plus3-advisor
+// @namespace     http://github.com/neoatlantis/saechsli
 // @description	  Experimental study of automated 3+3 gaming.
 //
 // @require https://code.jquery.com/jquery-2.1.4.min.js
