@@ -53,10 +53,12 @@ def index(grid, food):
 #    print(grid)
 #    print("next: %d" % food)
     
-    if zeros > 8:
+    if zeros >= 6:
         maxcount = 4
-    else:
+    elif zeros >= 4:
         maxcount = 5
+    else:
+        maxcount = 6
 
     movementCount = food
 
